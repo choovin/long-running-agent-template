@@ -1,0 +1,587 @@
+{
+  "$schema": "./feature_schema.json",
+  "project": "Example Web Application",
+  "version": "1.0.0",
+  "created_at": "2024-01-15T00:00:00Z",
+  "updated_at": null,
+  "total_features": 25,
+  "passing_features": 0,
+  "features": [
+    {
+      "id": "F001",
+      "category": "configuration",
+      "priority": "critical",
+      "description": "Project can be initialized with init.sh script",
+      "steps": [
+        "Run ./scripts/init.sh",
+        "Verify dependencies are installed",
+        "Verify environment variables are set"
+      ],
+      "acceptance_criteria": [
+        "init.sh exits with code 0",
+        "node_modules directory exists",
+        ".env file is created from .env.example"
+      ],
+      "dependencies": [],
+      "passes": false,
+      "last_tested": null,
+      "tested_by": null,
+      "estimated_complexity": "trivial"
+    },
+    {
+      "id": "F002",
+      "category": "configuration",
+      "priority": "critical",
+      "description": "Development server starts successfully",
+      "steps": [
+        "Run ./scripts/start_dev.sh",
+        "Wait for server to be ready",
+        "Access http://localhost:3000/health",
+        "Verify 200 response"
+      ],
+      "acceptance_criteria": [
+        "Server starts without errors",
+        "Health endpoint returns 200",
+        "Server responds within 5 seconds"
+      ],
+      "dependencies": ["F001"],
+      "passes": false,
+      "last_tested": null,
+      "tested_by": null,
+      "estimated_complexity": "trivial"
+    },
+    {
+      "id": "F003",
+      "category": "ui",
+      "priority": "critical",
+      "description": "Homepage loads and displays correctly",
+      "steps": [
+        "Navigate to http://localhost:3000",
+        "Verify page title is correct",
+        "Verify main navigation is visible",
+        "Verify no console errors"
+      ],
+      "acceptance_criteria": [
+        "Page loads within 3 seconds",
+        "Title matches expected value",
+        "No JavaScript console errors",
+        "Page is responsive on mobile"
+      ],
+      "dependencies": ["F002"],
+      "passes": false,
+      "last_tested": null,
+      "tested_by": null,
+      "estimated_complexity": "simple"
+    },
+    {
+      "id": "F004",
+      "category": "functional",
+      "priority": "critical",
+      "description": "User can register a new account",
+      "steps": [
+        "Navigate to /register",
+        "Fill in email field with valid email",
+        "Fill in password field with valid password",
+        "Click submit button",
+        "Verify redirect to dashboard or login page"
+      ],
+      "acceptance_criteria": [
+        "Form validation works",
+        "User is created in database",
+        "Password is hashed",
+        "User receives confirmation (email or redirect)"
+      ],
+      "dependencies": ["F002"],
+      "passes": false,
+      "last_tested": null,
+      "tested_by": null,
+      "estimated_complexity": "medium"
+    },
+    {
+      "id": "F005",
+      "category": "functional",
+      "priority": "critical",
+      "description": "User can log in with valid credentials",
+      "steps": [
+        "Navigate to /login",
+        "Enter registered email",
+        "Enter correct password",
+        "Click login button",
+        "Verify redirect to dashboard"
+      ],
+      "acceptance_criteria": [
+        "Valid credentials grant access",
+        "Session token is created",
+        "User is redirected to dashboard",
+        "User information is displayed"
+      ],
+      "dependencies": ["F004"],
+      "passes": false,
+      "last_tested": null,
+      "tested_by": null,
+      "estimated_complexity": "medium"
+    },
+    {
+      "id": "F006",
+      "category": "functional",
+      "priority": "high",
+      "description": "User can log out",
+      "steps": [
+        "Log in as existing user",
+        "Click logout button",
+        "Verify redirect to homepage",
+        "Try accessing protected route",
+        "Verify redirect to login"
+      ],
+      "acceptance_criteria": [
+        "Session is destroyed",
+        "User is redirected to homepage",
+        "Protected routes are inaccessible"
+      ],
+      "dependencies": ["F005"],
+      "passes": false,
+      "last_tested": null,
+      "tested_by": null,
+      "estimated_complexity": "simple"
+    },
+    {
+      "id": "F007",
+      "category": "security",
+      "priority": "critical",
+      "description": "Invalid login credentials show error message",
+      "steps": [
+        "Navigate to /login",
+        "Enter incorrect email/password",
+        "Click login button",
+        "Verify error message is displayed"
+      ],
+      "acceptance_criteria": [
+        "Error message is displayed",
+        "User is not logged in",
+        "No redirect to dashboard",
+        "Form fields are preserved (email only)"
+      ],
+      "dependencies": ["F005"],
+      "passes": false,
+      "last_tested": null,
+      "tested_by": null,
+      "estimated_complexity": "simple"
+    },
+    {
+      "id": "F008",
+      "category": "api",
+      "priority": "high",
+      "description": "API returns proper error responses",
+      "steps": [
+        "Send malformed request to API",
+        "Verify 400 status code",
+        "Verify error message in response",
+        "Send unauthorized request",
+        "Verify 401 status code"
+      ],
+      "acceptance_criteria": [
+        "4xx errors return proper status codes",
+        "Error messages are clear",
+        "Response format is consistent"
+      ],
+      "dependencies": ["F002"],
+      "passes": false,
+      "last_tested": null,
+      "tested_by": null,
+      "estimated_complexity": "simple"
+    },
+    {
+      "id": "F009",
+      "category": "ui",
+      "priority": "medium",
+      "description": "Application has dark mode support",
+      "steps": [
+        "Log in to application",
+        "Click theme toggle button",
+        "Verify UI switches to dark mode",
+        "Refresh page",
+        "Verify theme preference is persisted"
+      ],
+      "acceptance_criteria": [
+        "Theme toggle works",
+        "All UI elements adapt to theme",
+        "Preference is saved to localStorage",
+        "Theme persists on refresh"
+      ],
+      "dependencies": ["F003"],
+      "passes": false,
+      "last_tested": null,
+      "tested_by": null,
+      "estimated_complexity": "simple"
+    },
+    {
+      "id": "F010",
+      "category": "accessibility",
+      "priority": "medium",
+      "description": "Application is keyboard navigable",
+      "steps": [
+        "Navigate to homepage",
+        "Press Tab key repeatedly",
+        "Verify all interactive elements can be focused",
+        "Press Enter to activate buttons",
+        "Use Escape to close modals"
+      ],
+      "acceptance_criteria": [
+        "Tab order is logical",
+        "Focus indicators are visible",
+        "All interactive elements are reachable",
+        "Modal can be closed with Escape"
+      ],
+      "dependencies": ["F003"],
+      "passes": false,
+      "last_tested": null,
+      "tested_by": null,
+      "estimated_complexity": "medium"
+    },
+    {
+      "id": "F011",
+      "category": "database",
+      "priority": "critical",
+      "description": "Database migrations run successfully",
+      "steps": [
+        "Run migration command",
+        "Verify tables are created",
+        "Verify indexes are created",
+        "Rollback migration",
+        "Verify tables are dropped"
+      ],
+      "acceptance_criteria": [
+        "Migrations run without errors",
+        "Schema matches expected structure",
+        "Rollback works correctly"
+      ],
+      "dependencies": ["F001"],
+      "passes": false,
+      "last_tested": null,
+      "tested_by": null,
+      "estimated_complexity": "medium"
+    },
+    {
+      "id": "F012",
+      "category": "performance",
+      "priority": "medium",
+      "description": "Page load time is under 3 seconds",
+      "steps": [
+        "Clear browser cache",
+        "Navigate to homepage",
+        "Measure page load time",
+        "Repeat for other main pages"
+      ],
+      "acceptance_criteria": [
+        "Homepage loads in under 3 seconds",
+        "Dashboard loads in under 3 seconds",
+        "No excessive network requests"
+      ],
+      "dependencies": ["F003"],
+      "passes": false,
+      "last_tested": null,
+      "tested_by": null,
+      "estimated_complexity": "medium"
+    },
+    {
+      "id": "F013",
+      "category": "error_handling",
+      "priority": "high",
+      "description": "Application handles network errors gracefully",
+      "steps": [
+        "Open browser dev tools",
+        "Set network to offline",
+        "Attempt to perform action",
+        "Verify error message is shown",
+        "Restore network",
+        "Verify retry works"
+      ],
+      "acceptance_criteria": [
+        "User-friendly error message displayed",
+        "Application doesn't crash",
+        "Retry functionality available"
+      ],
+      "dependencies": ["F002"],
+      "passes": false,
+      "last_tested": null,
+      "tested_by": null,
+      "estimated_complexity": "medium"
+    },
+    {
+      "id": "F014",
+      "category": "functional",
+      "priority": "high",
+      "description": "User can update their profile",
+      "steps": [
+        "Log in as existing user",
+        "Navigate to profile settings",
+        "Update display name",
+        "Click save button",
+        "Verify changes are persisted"
+      ],
+      "acceptance_criteria": [
+        "Form shows current values",
+        "Changes are saved to database",
+        "Success message is displayed",
+        "Changes are immediately visible"
+      ],
+      "dependencies": ["F005"],
+      "passes": false,
+      "last_tested": null,
+      "tested_by": null,
+      "estimated_complexity": "medium"
+    },
+    {
+      "id": "F015",
+      "category": "security",
+      "priority": "critical",
+      "description": "Passwords are hashed before storage",
+      "steps": [
+        "Register a new user with known password",
+        "Query database directly",
+        "Verify password field contains hash",
+        "Verify hash can be verified against original password"
+      ],
+      "acceptance_criteria": [
+        "Password is not stored in plaintext",
+        "bcrypt or argon2 is used",
+        "Hash verification works correctly"
+      ],
+      "dependencies": ["F004"],
+      "passes": false,
+      "last_tested": null,
+      "tested_by": null,
+      "estimated_complexity": "simple"
+    },
+    {
+      "id": "F016",
+      "category": "functional",
+      "priority": "high",
+      "description": "User can delete their account",
+      "steps": [
+        "Log in as existing user",
+        "Navigate to account settings",
+        "Click delete account button",
+        "Confirm deletion",
+        "Verify user is logged out",
+        "Verify cannot log back in"
+      ],
+      "acceptance_criteria": [
+        "Confirmation dialog is shown",
+        "User data is removed from database",
+        "User cannot log in after deletion",
+        "Session is terminated"
+      ],
+      "dependencies": ["F005"],
+      "passes": false,
+      "last_tested": null,
+      "tested_by": null,
+      "estimated_complexity": "medium"
+    },
+    {
+      "id": "F017",
+      "category": "integration",
+      "priority": "medium",
+      "description": "Email notifications are sent for registration",
+      "steps": [
+        "Register a new user",
+        "Check email inbox",
+        "Verify welcome email is received",
+        "Verify email content is correct"
+      ],
+      "acceptance_criteria": [
+        "Email is sent within 1 minute",
+        "Email contains correct user info",
+        "Email is properly formatted"
+      ],
+      "dependencies": ["F004"],
+      "passes": false,
+      "last_tested": null,
+      "tested_by": null,
+      "estimated_complexity": "medium"
+    },
+    {
+      "id": "F018",
+      "category": "api",
+      "priority": "high",
+      "description": "API rate limiting is implemented",
+      "steps": [
+        "Send 100 requests within 1 minute",
+        "Verify rate limit response after threshold",
+        "Wait for rate limit window to reset",
+        "Verify requests succeed again"
+      ],
+      "acceptance_criteria": [
+        "Rate limit threshold is enforced",
+        "429 response when exceeded",
+        "Retry-After header is included",
+        "Rate limit resets after window"
+      ],
+      "dependencies": ["F002"],
+      "passes": false,
+      "last_tested": null,
+      "tested_by": null,
+      "estimated_complexity": "medium"
+    },
+    {
+      "id": "F019",
+      "category": "ui",
+      "priority": "low",
+      "description": "Loading states are shown during async operations",
+      "steps": [
+        "Navigate to a page with async data",
+        "Observe loading indicator while data loads",
+        "Verify loading indicator disappears when done"
+      ],
+      "acceptance_criteria": [
+        "Loading spinner/skeleton is shown",
+        "Loading state matches operation duration",
+        "No layout shift when data arrives"
+      ],
+      "dependencies": ["F003"],
+      "passes": false,
+      "last_tested": null,
+      "tested_by": null,
+      "estimated_complexity": "simple"
+    },
+    {
+      "id": "F020",
+      "category": "functional",
+      "priority": "medium",
+      "description": "User can reset forgotten password",
+      "steps": [
+        "Navigate to login page",
+        "Click 'Forgot Password' link",
+        "Enter registered email",
+        "Check email for reset link",
+        "Click reset link",
+        "Enter new password",
+        "Verify can log in with new password"
+      ],
+      "acceptance_criteria": [
+        "Reset email is sent",
+        "Reset link has expiration",
+        "New password can be set",
+        "Old password no longer works"
+      ],
+      "dependencies": ["F005"],
+      "passes": false,
+      "last_tested": null,
+      "tested_by": null,
+      "estimated_complexity": "complex"
+    },
+    {
+      "id": "F021",
+      "category": "security",
+      "priority": "critical",
+      "description": "CSRF protection is implemented",
+      "steps": [
+        "Inspect form submissions",
+        "Verify CSRF token is included",
+        "Attempt submission without token",
+        "Verify request is rejected"
+      ],
+      "acceptance_criteria": [
+        "CSRF tokens are generated",
+        "Tokens are validated on submission",
+        "Requests without tokens are rejected"
+      ],
+      "dependencies": ["F002"],
+      "passes": false,
+      "last_tested": null,
+      "tested_by": null,
+      "estimated_complexity": "medium"
+    },
+    {
+      "id": "F022",
+      "category": "performance",
+      "priority": "low",
+      "description": "Images are optimized and lazy loaded",
+      "steps": [
+        "Navigate to page with images",
+        "Verify images have loading='lazy' attribute",
+        "Check image formats (WebP preferred)",
+        "Verify images only load when near viewport"
+      ],
+      "acceptance_criteria": [
+        "Images use modern formats",
+        "Lazy loading is implemented",
+        "Images are compressed appropriately"
+      ],
+      "dependencies": ["F003"],
+      "passes": false,
+      "last_tested": null,
+      "tested_by": null,
+      "estimated_complexity": "simple"
+    },
+    {
+      "id": "F023",
+      "category": "accessibility",
+      "priority": "medium",
+      "description": "Form validation errors are announced to screen readers",
+      "steps": [
+        "Enable screen reader",
+        "Submit form with invalid data",
+        "Verify error is announced",
+        "Verify error is associated with field"
+      ],
+      "acceptance_criteria": [
+        "Errors have aria-describedby",
+        "Error container has role='alert'",
+        "Screen reader announces errors"
+      ],
+      "dependencies": ["F004"],
+      "passes": false,
+      "last_tested": null,
+      "tested_by": null,
+      "estimated_complexity": "medium"
+    },
+    {
+      "id": "F024",
+      "category": "ui",
+      "priority": "low",
+      "description": "Application has consistent responsive design",
+      "steps": [
+        "Open application at 1920px width",
+        "Take screenshot",
+        "Resize to 768px width",
+        "Verify layout adapts",
+        "Resize to 375px width",
+        "Verify mobile layout"
+      ],
+      "acceptance_criteria": [
+        "No horizontal scroll at any width",
+        "All content is accessible on mobile",
+        "Navigation adapts to hamburger menu"
+      ],
+      "dependencies": ["F003"],
+      "passes": false,
+      "last_tested": null,
+      "tested_by": null,
+      "estimated_complexity": "medium"
+    },
+    {
+      "id": "F025",
+      "category": "integration",
+      "priority": "medium",
+      "description": "Application integrates with analytics",
+      "steps": [
+        "Load application",
+        "Check network requests",
+        "Verify analytics events are sent",
+        "Navigate through app",
+        "Verify page view events"
+      ],
+      "acceptance_criteria": [
+        "Analytics script loads",
+        "Page views are tracked",
+        "Custom events are tracked"
+      ],
+      "dependencies": ["F003"],
+      "passes": false,
+      "last_tested": null,
+      "tested_by": null,
+      "estimated_complexity": "simple"
+    }
+  ]
+}

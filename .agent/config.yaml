@@ -1,0 +1,73 @@
+# Agent Configuration
+
+project:
+  name: "${PROJECT_NAME}"
+  version: "1.0.0"
+  description: "Long-running agent project template"
+
+agent:
+  model: "claude-opus-4-5"
+  max_context_tokens: 200000
+  compaction_threshold: 0.8
+
+  # Session management
+  session:
+    max_duration_minutes: 240  # 4 hours
+    checkpoint_interval_minutes: 30
+    auto_checkpoint: true
+
+  # Feature workflow
+  features:
+    max_per_session: 3
+    require_tests: true
+    require_e2e_verification: true
+    json_format_strict: true  # Prefer JSON over Markdown for feature lists
+
+  # Testing requirements
+  testing:
+    e2e_required: true
+    browser_automation: true
+    screenshot_on_failure: true
+    unit_tests_required: true
+    integration_tests_required: false
+
+  # Git workflow
+  git:
+    auto_commit: true
+    commit_message_format: "conventional"  # conventional, simple, detailed
+    require_clean_state: true
+
+  # Progress tracking
+  progress:
+    log_format: "markdown"  # markdown, json
+    detailed_session_logs: true
+    include_metrics: true
+
+# Environment setup
+environment:
+  runtime: "node"  # node, python, go, rust
+  package_manager: "npm"  # npm, yarn, pnpm, bun
+
+  dev_server:
+    command: "npm run dev"
+    port: 3000
+    health_check: "/health"
+
+  init_script: "./scripts/init.sh"
+  start_script: "./scripts/start_dev.sh"
+  test_script: "./scripts/test_e2e.sh"
+
+# Notification settings (optional)
+notifications:
+  enabled: false
+  on_session_start: false
+  on_session_end: true
+  on_feature_complete: true
+  on_error: true
+  webhook_url: ""
+
+# Recovery settings
+recovery:
+  auto_rollback_on_failure: true
+  max_rollback_commits: 5
+  preserve_session_logs: true

@@ -101,9 +101,14 @@
           "description": "Feature IDs that must be completed first"
         },
         "passes": {
-          "type": "boolean",
+          "type": ["boolean", "string"],
+          "enum": [true, false, "skipped"],
           "default": false,
-          "description": "Whether the feature passes all tests"
+          "description": "Feature status: true (passing), false (pending), 'skipped' (blocked)"
+        },
+        "skip_reason": {
+          "type": ["string", "null"],
+          "description": "Reason for skipping the feature"
         },
         "last_tested": {
           "type": ["string", "null"],

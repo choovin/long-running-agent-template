@@ -6,6 +6,13 @@ This document describes the architecture of the Long-Running Agent System.
 
 The system is designed to enable AI agents to work effectively across multiple context windows by implementing a harness structure with clear state management and progress tracking.
 
+## Key Features
+
+- **Dual Execution Modes**: Interactive and Autopilot modes for different workflows
+- **CLI Automation**: `dev-agent.py` tool for workflow management
+- **Team Mode**: Parallel development with git worktree isolation
+- **YAML Configuration**: Flexible configuration system
+
 ## Core Components
 
 ### 1. Initializer Agent
@@ -46,7 +53,21 @@ The system is designed to enable AI agents to work effectively across multiple c
 5. Test thoroughly
 6. Commit and document
 
-### 3. State Management
+### 3. CLI Tool (dev-agent.py)
+
+**Role**: Automates workflow management and provides consistent interface.
+
+**Commands**:
+- `status` - Show progress summary
+- `next` - Get next feature to implement
+- `find-parallel` - Find parallelizable features
+- `complete <id>` - Mark feature as passing
+- `skip <id> "reason"` - Mark feature as skipped
+- `regression` - Pick features to re-verify
+- `log` - Append structured progress
+- `run` - Start autonomous loop
+
+### 4. State Management
 
 **Progress File** (`progress/claude-progress.md`):
 - Session-by-session log
@@ -58,7 +79,7 @@ The system is designed to enable AI agents to work effectively across multiple c
 **Feature List** (`features/feature_list.json`):
 - Comprehensive feature requirements
 - Test steps for each feature
-- Pass/fail status
+- Pass/fail/skipped status
 - Dependencies between features
 
 **Checkpoints** (`.agent/state/checkpoints/`):
@@ -66,7 +87,7 @@ The system is designed to enable AI agents to work effectively across multiple c
 - Git state at checkpoint
 - Feature progress
 
-### 4. Testing Infrastructure
+### 5. Testing Infrastructure
 
 **Unit Tests** (`tests/unit/`):
 - Fast, isolated tests
@@ -76,6 +97,66 @@ The system is designed to enable AI agents to work effectively across multiple c
 - Browser automation tests
 - Full user flow testing
 - Playwright-based
+
+## Execution Modes
+
+### Mode A: Interactive (Default)
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    INTERACTIVE MODE                              │
+├─────────────────────────────────────────────────────────────────┤
+│  1. dev-agent.py status ──────► Check current progress         │
+│  2. dev-agent.py next ────────► Get next feature               │
+│  3. Implement feature ────────► Write code, run tests          │
+│  4. dev-agent.py complete ────► Mark feature passing           │
+│  5. Commit & log ─────────────► Save progress                  │
+│  6. /clear or continue ───────► Repeat or end session          │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Benefits**:
+- Full visibility of each action
+- MCP tools work (Playwright, etc.)
+- No extra permissions needed
+- User can intervene at any step
+
+### Mode B: Autopilot
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    AUTOPILOT MODE                                │
+├─────────────────────────────────────────────────────────────────┤
+│  1. dev-agent.py run ─────────► Start autonomous loop          │
+│  2. For each feature:                                            │
+│     ├── Spawn claude -p process                                  │
+│     ├── Implement feature                                        │
+│     ├── Run tests                                                │
+│     ├── Mark complete                                            │
+│     └── Commit                                                   │
+│  3. Continue until done or error                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Benefits**:
+- Fully autonomous
+- Works on multiple features
+- No context management needed
+- Parallel execution support
+
+### Team Mode (Parallel)
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    TEAM MODE                                     │
+├─────────────────────────────────────────────────────────────────┤
+│  1. find-parallel ────────────► Find N parallelizable features │
+│  2. Create worktrees ─────────► Isolated git worktrees         │
+│  3. Run parallel sessions ────► Spawn N claude processes       │
+│  4. Merge completed ──────────► Merge worktree branches        │
+│  5. Clean up ─────────────────► Remove worktrees               │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ## Data Flow
 
@@ -107,8 +188,8 @@ The system is designed to enable AI agents to work effectively across multiple c
 │                                                                  │
 │  6. Commit & Document                                            │
 │     ├── git commit ───────────────────► Save progress           │
-│     ├── Update feature status ────────► Mark passing            │
-│     └── Update progress file ──────────► Document session       │
+│     ├── dev-agent.py complete ────────► Mark passing            │
+│     └── dev-agent.py log ─────────────► Document session        │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -164,10 +245,14 @@ The system is designed to enable AI agents to work effectively across multiple c
 │   └── session_logs/         # Detailed logs
 │
 ├── scripts/                   # Automation
+│   ├── dev-agent.py          # CLI workflow tool
 │   ├── init.sh               # Initialize environment
 │   ├── start_dev.sh          # Start dev server
 │   ├── test_e2e.sh           # Run E2E tests
 │   └── checkpoint.sh         # Create checkpoint
+│
+├── templates/                 # Workflow templates
+│   └── AGENTS.md             # Agent workflow template
 │
 ├── tests/                     # Test suites
 │   ├── e2e/                  # End-to-end tests
@@ -191,6 +276,8 @@ The `.agent/config.yaml` file controls:
 - Feature workflow settings
 - Testing requirements
 - Git workflow preferences
+- Execution mode settings
+- Team mode settings
 - Notification settings
 
 ## Integration Points

@@ -71,3 +71,23 @@ recovery:
   auto_rollback_on_failure: true
   max_rollback_commits: 5
   preserve_session_logs: true
+
+# Execution mode configuration
+execution:
+  mode: "interactive"  # interactive | autopilot
+  max_features_per_session: 0  # 0 = unlimited
+  max_turns_per_feature: 150
+  timeout_per_feature: 1800  # seconds
+  delay_between_features: 3  # seconds
+
+# Team Mode configuration (parallel development)
+team_mode:
+  enabled: false
+  max_parallel: 3
+  auto_prompt_threshold: 6  # auto-prompt when remaining features >= 6
+
+# Progress file configuration
+progress:
+  format: "markdown"  # markdown | txt
+  structured_logging: true
+  path: "progress/claude-progress.md"

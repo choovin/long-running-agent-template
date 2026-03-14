@@ -2,6 +2,17 @@
 
 A production-ready template for building AI agents that work effectively across multiple context windows, based on Anthropic's research on effective harnesses for long-running agents.
 
+## Features
+
+- **Project Template**: Complete project structure with feature management, progress tracking, and testing infrastructure
+- **CLI Automation**: `dev-agent.py` tool for managing workflow via command line
+- **Dual Execution Modes**:
+  - **Mode A (Interactive)**: Claude implements features directly, better visibility, MCP tools work
+  - **Mode B (Autopilot)**: Fully autonomous execution with parallel support
+- **Team Mode**: Parallel development with git worktree isolation
+- **YAML Configuration**: Flexible agent configuration via `.agent/config.yaml`
+- **Complete Testing Framework**: Unit tests, E2E tests, and browser automation
+
 ## Core Concepts
 
 This template implements a two-part solution:
@@ -28,10 +39,13 @@ This template implements a two-part solution:
 │   ├── claude-progress.md    # Human-readable progress log
 │   └── session_logs/         # Detailed session logs
 ├── scripts/                   # Automation scripts
+│   ├── dev-agent.py          # CLI tool for workflow management
 │   ├── init.sh               # Environment initialization
 │   ├── start_dev.sh          # Start development server
 │   ├── test_e2e.sh           # End-to-end testing
 │   └── checkpoint.sh         # Create session checkpoint
+├── templates/                 # Workflow templates
+│   └── AGENTS.md             # Agent workflow template
 ├── tests/                     # Test suites
 │   ├── e2e/                  # End-to-end tests
 │   ├── unit/                 # Unit tests
@@ -52,20 +66,53 @@ This template implements a two-part solution:
 ### 1. Initialize the Project
 
 ```bash
-# Run the initializer agent
+# Run the initializer script
 ./scripts/init.sh
 ```
 
-### 2. Start Development
+### 2. Choose Your Mode
 
-The coding agent will:
-1. Read git logs and progress files to understand current state
-2. Read feature list and choose the next priority feature
-3. Start the development server and verify basic functionality
-4. Implement the feature incrementally
-5. Run end-to-end tests
-6. Commit progress with descriptive messages
-7. Update progress notes
+#### Mode A: Interactive (Recommended)
+
+Best for visibility, MCP tools work, no extra permissions needed.
+
+```bash
+# Check status
+python3 scripts/dev-agent.py status
+
+# Get next feature
+python3 scripts/dev-agent.py next
+
+# After implementing and testing, mark complete
+python3 scripts/dev-agent.py complete F001
+```
+
+#### Mode B: Autopilot
+
+Fully autonomous execution, runs multiple features automatically.
+
+```bash
+# Start autonomous development
+python3 scripts/dev-agent.py run
+
+# Run with options
+python3 scripts/dev-agent.py run --max-features 10    # Limit to 10 features
+python3 scripts/dev-agent.py run --parallel 3         # Run 3 features in parallel
+python3 scripts/dev-agent.py run --timeout 3600       # 1 hour per feature
+```
+
+## CLI Commands Reference
+
+| Command | Description |
+|---------|-------------|
+| `python3 scripts/dev-agent.py status` | Show progress summary |
+| `python3 scripts/dev-agent.py next` | Get next feature to implement |
+| `python3 scripts/dev-agent.py find-parallel` | Show parallelizable features |
+| `python3 scripts/dev-agent.py complete <id>` | Mark feature as passing |
+| `python3 scripts/dev-agent.py skip <id> "reason"` | Skip a feature |
+| `python3 scripts/dev-agent.py regression` | Pick features to re-verify |
+| `python3 scripts/dev-agent.py log ...` | Log structured progress |
+| `python3 scripts/dev-agent.py run` | Start autonomous loop |
 
 ## Key Components
 
@@ -90,9 +137,10 @@ The coding agent will:
         "Criteria 1",
         "Criteria 2"
       ],
+      "dependencies": [],
       "passes": false,
       "last_tested": null,
-      "notes": ""
+      "skip_reason": null
     }
   ]
 }
@@ -112,55 +160,42 @@ Tracks all work done across sessions:
 - Status: F001 complete, F002 in progress
 - Commits: abc123, def456
 - Notes: Basic authentication working
-
-## Session 2024-01-16-001
-...
 ```
 
-### Initialization Script (`scripts/init.sh`)
+### Configuration (`.agent/config.yaml`)
 
-Sets up the complete development environment:
+```yaml
+agent:
+  model: "claude-opus-4-5"
+  max_context_tokens: 200000
+
+execution:
+  mode: "interactive"  # interactive | autopilot
+  max_turns_per_feature: 150
+  timeout_per_feature: 1800
+
+team_mode:
+  enabled: false
+  max_parallel: 3
+
+testing:
+  e2e_required: true
+  browser_automation: true
+```
+
+## Team Mode (Parallel Development)
+
+When multiple independent features are available, enable Team Mode for parallel development:
 
 ```bash
-#!/bin/bash
-# Initializes project for long-running agent workflow
+# Check for parallelizable features
+python3 scripts/dev-agent.py find-parallel
+
+# Run in parallel
+python3 scripts/dev-agent.py run --parallel 3
 ```
 
-## Agent Workflow
-
-### Session Start
-
-1. **Get Bearings**
-   ```bash
-   pwd                    # Confirm working directory
-   git log --oneline -20  # Recent changes
-   cat progress/claude-progress.md  # Progress history
-   ```
-
-2. **Load Feature State**
-   ```bash
-   cat features/feature_list.json | jq '.features[] | select(.passes == false)'
-   ```
-
-3. **Verify Environment**
-   ```bash
-   ./scripts/start_dev.sh
-   ./scripts/test_e2e.sh --smoke
-   ```
-
-### During Session
-
-1. Choose ONE feature to work on
-2. Implement incrementally
-3. Test thoroughly (unit + e2e)
-4. Mark feature as passing ONLY after verification
-
-### Session End
-
-1. Run full test suite
-2. Commit with descriptive message
-3. Update progress file
-4. Create checkpoint if significant progress
+Each parallel session gets its own git worktree, ensuring isolated development.
 
 ## Testing Strategy
 
@@ -186,30 +221,6 @@ Before marking any feature as "passing":
 2. Run e2e tests: `npm run test:e2e`
 3. Manual browser verification
 4. Check for regressions
-
-## Configuration
-
-### Agent Config (`.agent/config.yaml`)
-
-```yaml
-agent:
-  name: "long-running-coder"
-  model: "claude-opus-4-5"
-  max_context_tokens: 200000
-
-session:
-  max_duration: "4h"
-  checkpoint_interval: "30m"
-
-features:
-  max_per_session: 3
-  require_tests: true
-
-testing:
-  e2e_required: true
-  browser_automation: true
-  screenshot_on_failure: true
-```
 
 ## Failure Modes and Solutions
 

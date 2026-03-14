@@ -1,30 +1,170 @@
-# 长运行智能体系统模板
+# 长运行智能体系统
 
-一个生产就绪的项目模板，用于构建能够跨多个上下文窗口有效工作的 AI 智能体系统。基于 Anthropic 关于长运行智能体有效框架的研究实现。
+[English](README.md) | 中文
 
-## 核心概念
+一个生产就绪的项目模板和 Claude Code 技能，用于构建能够跨多个上下文窗口有效工作的 AI 智能体系统。基于 Anthropic 关于长运行智能体有效框架的研究实现。
 
-本模板实现了双组件解决方案：
+## 安装为 Claude Code 技能
 
-1. **初始化智能体（Initializer Agent）** - 在首次运行时设置完整环境
-2. **编码智能体（Coding Agent）** - 在每个会话中增量推进工作，同时留下清晰的产物
+### 方法一：手动安装
 
-## 背景问题
+1. **克隆或下载本项目**
+   ```bash
+   git clone <your-repo-url>
+   cd long-running-agent-template
+   ```
 
-当 AI 智能体变得越来越强大时，开发者开始让它们承担跨越数小时甚至数天的复杂任务。然而，让智能体在多个上下文窗口之间保持一致的进度仍然是一个开放性问题。
+2. **复制技能到 Claude Code 配置目录**
+   ```bash
+   # 创建技能目录（如果不存在）
+   mkdir -p ~/.claude/skills
 
-长运行智能体的核心挑战在于：它们必须在离散的会话中工作，而每个新会话开始时都没有之前的记忆。这就像一个软件项目由轮班工作的工程师团队负责，但每位新工程师到达时都不知道上一班发生了什么。
+   # 复制技能文件夹
+   cp -r skills/long-running-agent ~/.claude/skills/
+   ```
 
-## 解决方案
+3. **验证安装**
+   ```bash
+   ls ~/.claude/skills/long-running-agent/
+   # 应该看到: SKILL.md  scripts/  templates/
+   ```
 
-根据 Anthropic 的研究，我们采用以下方案：
+4. **重启 Claude Code 或开始新会话**
 
-| 问题 | 解决方案 |
-|------|----------|
-| 智能体过早宣布项目完成 | 使用结构化 JSON 特性列表，包含明确的测试步骤 |
-| 环境遗留 bug 或未记录的进度 | Git 提交 + 进度文件更新 |
-| 特性被过早标记为完成 | 严格的自验证协议 |
-| 智能体浪费时间搞清楚如何运行应用 | `init.sh` 脚本自动设置环境 |
+### 方法二：使用符号链接（推荐用于开发）
+
+```bash
+# 创建技能目录
+mkdir -p ~/.claude/skills
+
+# 创建符号链接
+ln -s $(pwd)/skills/long-running-agent ~/.claude/skills/long-running-agent
+```
+
+### 验证技能已加载
+
+在 Claude Code 中发送以下消息：
+
+```
+帮我演示长运行智能体技能
+```
+
+如果技能正确安装，Claude 会自动加载并使用此技能。
+
+---
+
+## 功能特性
+
+- **项目模板**：完整的项目结构，包含功能管理、进度追踪和测试基础设施
+- **CLI 自动化**：`dev-agent.py` 工具用于命令行管理工作流
+- **双执行模式**：
+  - **模式 A（交互式）**：Claude 直接实现功能，更好的可见性，MCP 工具可用
+  - **模式 B（自动模式）**：完全自主执行，支持并行开发
+- **团队模式**：使用 git worktree 隔离的并行开发
+- **YAML 配置**：通过 `.agent/config.yaml` 灵活配置智能体
+- **完整测试框架**：单元测试、E2E 测试和浏览器自动化
+
+## 快速开始
+
+### 方式一：作为技能使用（推荐）
+
+安装技能后，只需在 Claude Code 中说：
+
+```
+我想开发一个待办事项应用，帮我用长运行智能体模式构建
+```
+
+或者：
+
+```
+用自动开发模式帮我实现这个项目的所有功能
+```
+
+Claude 会自动：
+1. 将必要的文件复制到你的项目
+2. 生成功能列表（feature_list.json）
+3. 创建进度追踪文件
+4. 询问你选择哪种模式（交互式/自动）
+5. 开始逐个实现功能
+
+### 方式二：作为模板使用
+
+如果你想从头开始一个新项目：
+
+```bash
+# 复制模板
+cp -r long-running-agent-template my-project
+cd my-project
+
+# 初始化
+./scripts/init.sh
+```
+
+然后启动 Claude Code：
+
+```
+开始开发这个项目
+```
+
+---
+
+## 使用指南
+
+### 模式 A：交互式（推荐新手）
+
+```bash
+# 1. 检查状态
+python3 scripts/dev-agent.py status
+
+# 2. 获取下一个功能
+python3 scripts/dev-agent.py next
+
+# 3. 实现、测试后标记完成
+python3 scripts/dev-agent.py complete F001
+
+# 4. 记录进度
+python3 scripts/dev-agent.py log --feature-id F001 --done "- 实现了登录表单" --testing "- E2E 测试通过"
+```
+
+### 模式 B：自动模式
+
+```bash
+# 启动自主开发循环
+python3 scripts/dev-agent.py run
+
+# 带参数运行
+python3 scripts/dev-agent.py run --max-features 10    # 最多 10 个功能
+python3 scripts/dev-agent.py run --parallel 3         # 并行 3 个
+python3 scripts/dev-agent.py run --timeout 3600       # 每个功能 1 小时
+```
+
+### 团队模式（并行开发）
+
+```bash
+# 检查可并行的功能
+python3 scripts/dev-agent.py find-parallel
+
+# 并行运行
+python3 scripts/dev-agent.py run --parallel 3
+```
+
+---
+
+## CLI 命令参考
+
+| 命令 | 描述 |
+|------|------|
+| `python3 scripts/dev-agent.py status` | 显示进度摘要 |
+| `python3 scripts/dev-agent.py next` | 获取下一个待实现功能 |
+| `python3 scripts/dev-agent.py find-parallel` | 显示可并行开发的功能 |
+| `python3 scripts/dev-agent.py complete <id>` | 标记功能为通过 |
+| `python3 scripts/dev-agent.py skip <id> "原因"` | 跳过功能 |
+| `python3 scripts/dev-agent.py regression` | 选择功能进行回归测试 |
+| `python3 scripts/dev-agent.py log ...` | 记录结构化进度 |
+| `python3 scripts/dev-agent.py run` | 启动自主循环 |
+| `python3 scripts/dev-agent.py run --parallel N` | 并行执行 |
+
+---
 
 ## 项目结构
 
@@ -32,61 +172,37 @@
 .
 ├── .agent/                    # 智能体配置和状态
 │   ├── config.yaml           # 智能体配置
-│   ├── prompts/              # 智能体提示词
-│   │   ├── initializer.md    # 初始化会话提示词
-│   │   └── coding.md         # 编码会话提示词
-│   └── state/                # 运行时状态（git 忽略）
-│       ├── session.json      # 当前会话信息
-│       └── checkpoints/      # 会话检查点
-├── features/                  # 特性管理
-│   ├── feature_list.json     # 完整的特性需求列表
+│   └── prompts/              # 智能体提示词
+├── features/                  # 功能管理
+│   ├── feature_list.json     # 完整的功能需求列表
 │   └── feature_schema.json   # JSON 模式定义
 ├── progress/                  # 进度追踪
-│   ├── claude-progress.md    # 人类可读的进度日志
-│   └── session_logs/         # 详细会话日志
+│   └── claude-progress.md    # 人类可读的进度日志
 ├── scripts/                   # 自动化脚本
+│   ├── dev-agent.py          # CLI 工作流管理工具
 │   ├── init.sh               # 环境初始化
 │   ├── start_dev.sh          # 启动开发服务器
-│   ├── test_e2e.sh           # 端到端测试
-│   └── checkpoint.sh         # 创建会话检查点
+│   └── test_e2e.sh           # 端到端测试
+├── templates/                 # 工作流模板
+│   └── AGENTS.md             # 智能体工作流模板
+├── skills/                    # Claude Code 技能定义
+│   └── long-running-agent/   # 本技能
+│       ├── SKILL.md          # 技能主文件
+│       ├── scripts/          # 技能脚本
+│       └── templates/        # 技能模板
 ├── tests/                     # 测试套件
 │   ├── e2e/                  # 端到端测试
 │   ├── unit/                 # 单元测试
 │   └── integration/          # 集成测试
 ├── src/                       # 源代码
 ├── docs/                      # 文档
-│   ├── architecture.md       # 系统架构
-│   ├── agent-workflow.md     # 智能体工作流指南
-│   └── troubleshooting.md    # 常见问题解答
 ├── CLAUDE.md                  # Claude Code 指令文件
 └── README.md                  # 项目说明
 ```
 
-## 快速开始
+---
 
-### 1. 初始化项目
-
-```bash
-# 运行初始化脚本
-./scripts/init.sh
-```
-
-### 2. 开始开发
-
-编码智能体会：
-1. 读取 git 日志和进度文件了解当前状态
-2. 读取特性列表并选择下一个优先特性
-3. 启动开发服务器并验证基本功能
-4. 增量实现特性
-5. 运行端到端测试
-6. 提交带有描述性消息的进度
-7. 更新进度文件
-
-## 核心组件详解
-
-### 特性列表 (`features/feature_list.json`)
-
-特性列表是整个系统的核心，采用 JSON 格式（比 Markdown 更抗意外修改）：
+## 功能列表格式
 
 ```json
 {
@@ -96,251 +212,150 @@
     {
       "id": "F001",
       "category": "functional",
-      "priority": "high",
-      "description": "特性描述",
+      "priority": "critical",
+      "description": "用户可以登录系统",
       "steps": [
-        "步骤 1: 导航到 X",
-        "步骤 2: 执行 Y",
-        "步骤 3: 验证 Z"
+        "导航到登录页面",
+        "输入邮箱和密码",
+        "点击登录按钮",
+        "验证跳转到首页"
       ],
       "acceptance_criteria": [
-        "验收标准 1",
-        "验收标准 2"
+        "有效凭证成功登录",
+        "无效凭证显示错误"
       ],
-      "dependencies": ["F000"],
+      "dependencies": [],
       "passes": false,
       "last_tested": null,
-      "notes": ""
+      "skip_reason": null
     }
   ]
 }
 ```
 
-**关键规则：**
-- 生成 50-200+ 个特性用于复杂项目
-- 每个特性应该是原子的、可测试的
-- 所有特性初始状态为 `"passes": false`
-- 包含正常路径和错误处理场景
+---
 
-### 进度文件 (`progress/claude-progress.md`)
+## 配置文件
 
-追踪跨会话的所有工作：
-
-```markdown
-# 进度日志
-
-## 会话 2024-01-15-001
-- 开始时间: 2024-01-15 10:00
-- 持续时间: 2 小时
-- 工作特性: F001, F002
-- 状态: F001 完成, F002 进行中
-- 提交: abc123, def456
-- 备注: 基础认证功能正常
-
-## 会话 2024-01-16-001
-...
-```
-
-### 初始化脚本 (`scripts/init.sh`)
-
-设置完整的开发环境：
-- 检查依赖项
-- 创建环境配置
-- 安装包依赖
-- 初始化数据库（如需要）
-- 设置 git 仓库
-
-## 智能体工作流
-
-### 会话开始
-
-每个会话都从以下步骤开始：
-
-```bash
-# 1. 确认工作目录
-pwd
-
-# 2. 检查最近的 git 历史
-git log --oneline -20
-
-# 3. 读取进度文件
-cat progress/claude-progress.md
-
-# 4. 检查当前状态
-git status
-
-# 5. 读取特性列表
-cat features/feature_list.json | jq '.features[] | select(.passes == false)'
-```
-
-### 环境验证
-
-```bash
-# 启动开发服务器
-./scripts/start_dev.sh
-
-# 运行冒烟测试
-./scripts/test_e2e.sh --smoke
-```
-
-**关键：** 如果冒烟测试失败，**必须先修复现有 bug**，然后再开始新特性。
-
-### 特性选择
-
-1. 读取特性列表
-2. 识别最高优先级的未完成特性
-3. 考虑依赖关系
-4. 宣布选择："我将工作于 **F00X: [特性描述]**"
-
-### 特性实现
-
-增量工作：
-1. **计划**：将特性分解为小的、可测试的步骤
-2. **编码**：一次实现一个步骤
-3. **测试**：每个步骤后运行相关测试
-4. **提交**：为工作状态创建小型、专注的提交
-
-### 特性验证（必需）
-
-在将特性标记为"通过"之前，必须：
-
-1. **运行单元测试**
-   ```bash
-   npm test
-   ```
-
-2. **运行端到端测试**
-   ```bash
-   npm run test:e2e
-   ```
-
-3. **手动浏览器验证**
-   - 使用浏览器自动化工具（Playwright）
-   - 截取截图
-   - 验证特性按用户预期工作
-
-4. **检查回归**
-   - 确保其他特性仍然工作
-   - 运行完整测试套件
-
-### 会话结束
-
-```bash
-# 1. 提交所有更改
-git add -A
-git commit -m "feat: 实现 F00X - [特性描述]
-
-- 实现了什么
-- 添加的测试
-- 其他备注
-
-Co-Authored-By: Claude <noreply@anthropic.com>"
-
-# 2. 更新进度文件
-
-# 3. 验证干净状态
-git status  # 应该是干净的
-npm test    # 应该通过
-```
-
-## 关键规则
-
-### 必须做 ✅
-
-- ✅ 每次只工作于**一个特性**
-- ✅ 在标记特性为通过之前进行**充分测试**
-- ✅ 频繁提交并带有**描述性消息**
-- ✅ 每个会话更新**进度文件**
-- ✅ 保持代码库处于**干净状态**
-- ✅ 使用**浏览器自动化**进行端到端验证
-- ✅ 开始工作前读取 **git 历史**
-- ✅ **先修复 bug**，再实现新特性
-
-### 禁止做 ❌
-
-- ❌ 尝试同时实现多个特性
-- ❌ 没有验证就标记特性为通过
-- ❌ 留下失败的测试或损坏的代码
-- ❌ 跳过定向阶段
-- ❌ 修改特性列表结构（只更新 `passes` 字段）
-- ❌ 删除或跳过测试
-- ❌ 忽略失败的冒烟测试
-
-## 测试策略
-
-### 单元测试
-
-```bash
-npm test                    # 运行所有单元测试
-npm test -- --watch        # 监视模式
-npm test -- path/to/test   # 运行特定测试
-```
-
-### 端到端测试
-
-```bash
-./scripts/test_e2e.sh              # 运行所有 E2E 测试
-./scripts/test_e2e.sh --smoke      # 只运行冒烟测试
-./scripts/test_e2e.sh --feature F001  # 测试特定特性
-```
-
-### 浏览器自动化模板
-
-```javascript
-const { chromium } = require('playwright');
-
-(async () => {
-  const browser = await chromium.launch({ headless: false });
-  const page = await browser.newPage();
-
-  await page.goto('http://localhost:3000');
-
-  // 测试你的特性
-  await page.fill('[data-testid="input"]', 'test');
-  await page.click('[data-testid="submit"]');
-
-  // 验证结果
-  await page.waitForSelector('.success');
-
-  // 截取截图用于验证
-  await page.screenshot({ path: '/tmp/feature-test.png' });
-
-  await browser.close();
-})();
-```
-
-## 故障模式与解决方案
-
-| 问题 | 初始化智能体行为 | 编码智能体行为 |
-|------|------------------|----------------|
-| 智能体过早宣布胜利 | 设置特性列表文件：基于输入规范创建结构化 JSON 文件 | 会话开始时读取特性列表，选择单个特性开始工作 |
-| 环境遗留 bug 或未记录的进度 | 编写初始 git 仓库和进度文件 | 会话开始时读取进度文件和 git 日志，运行基本测试 |
-| 特性被过早标记完成 | 设置特性列表文件 | 自验证所有特性，仅在仔细测试后标记为"通过" |
-| 智能体浪费时间搞清楚如何运行应用 | 编写可运行开发服务器的 `init.sh` 脚本 | 会话开始时读取 `init.sh` |
-
-## 配置
-
-### 智能体配置 (`.agent/config.yaml`)
+编辑 `.agent/config.yaml` 自定义行为：
 
 ```yaml
 agent:
-  name: "long-running-coder"
   model: "claude-opus-4-5"
   max_context_tokens: 200000
 
-session:
-  max_duration: "4h"
-  checkpoint_interval: "30m"
+execution:
+  mode: "interactive"  # interactive | autopilot
+  max_turns_per_feature: 150
+  timeout_per_feature: 1800
 
-features:
-  max_per_session: 3
-  require_tests: true
+team_mode:
+  enabled: false
+  max_parallel: 3
 
 testing:
   e2e_required: true
   browser_automation: true
-  screenshot_on_failure: true
 ```
+
+---
+
+## 关键规则
+
+### 必须做
+
+- 每次只工作于**一个功能**
+- 在标记功能为通过之前进行**充分测试**
+- 频繁提交并带有**描述性消息**
+- 每个会话更新**进度文件**
+- 保持代码库处于**干净状态**
+- 使用**浏览器自动化**进行端到端验证
+- 开始工作前读取 **git 历史**
+- **先修复 bug**，再实现新功能
+
+### 禁止做
+
+- 尝试同时实现多个功能
+- 没有验证就标记功能为通过
+- 留下失败的测试或损坏的代码
+- 跳过定向阶段
+- 修改功能列表结构（只更新 `passes` 字段）
+- 删除或跳过测试
+- 忽略失败的冒烟测试
+
+---
+
+## 故障模式与解决方案
+
+| 问题 | 解决方案 |
+|------|----------|
+| 智能体过早宣布胜利 | 使用结构化 JSON 功能列表，包含明确的测试步骤 |
+| 环境遗留 bug 或未记录的进度 | Git 提交 + 进度文件更新 |
+| 功能被过早标记为完成 | 严格的自验证协议 |
+| 智能体浪费时间搞清楚如何运行应用 | `init.sh` 脚本自动设置环境 |
+
+---
+
+## 示例会话
+
+```
+═══════════════════════════════════════════════════════════════════
+会话开始 - 模式 A（交互式）
+═══════════════════════════════════════════════════════════════════
+
+[Claude] 我将开始了解当前状态。
+
+$ python3 scripts/dev-agent.py status
+项目: 我的待办应用
+进度: 4/25 通过 (16.0%)
+剩余: 21
+
+$ python3 scripts/dev-agent.py next
+下一个功能: F005 (优先级 critical)
+描述: 用户可以登录系统
+类别: functional
+
+步骤:
+  1. 导航到 /login
+  2. 输入注册邮箱
+  3. 输入正确密码
+  4. 点击登录按钮
+  5. 验证跳转到首页
+
+[Claude] 我将实现 F005: 用户登录功能。
+
+[... 实现过程 ...]
+
+$ npm test
+✓ 所有单元测试通过
+
+$ npm run test:e2e
+✓ E2E 测试通过
+
+[Claude] 功能 F005 完成。
+
+$ python3 scripts/dev-agent.py complete F005
+✓ 功能 F005 标记为通过 (5/25)
+
+$ git add -A && git commit -m "feat: 实现用户登录 (F005)"
+[xyz789]
+
+$ python3 scripts/dev-agent.py log --feature-id F005 --done "- 添加登录表单、验证、API 端点" --testing "- 单元测试、E2E 测试、浏览器验证" --notes "- 会话令牌 24 小时后过期"
+已记录到 progress/claude-progress.md
+
+═══════════════════════════════════════════════════════════════════
+会话结束
+═══════════════════════════════════════════════════════════════════
+
+摘要:
+- 功能: F005 (完成)
+- 提交: xyz789
+- 测试: 全部通过
+- 进度: 5/25
+- 下一个: F006 (用户登出)
+```
+
+---
 
 ## 与 Claude Code 集成
 
@@ -349,84 +364,19 @@ testing:
 当使用 Claude Code 处理此项目时，它会自动：
 1. 开始时运行定向命令
 2. 验证环境状态
-3. 从特性列表中选择下一个特性
+3. 从功能列表中选择下一个功能
 4. 增量实现并测试
 5. 提交进度并更新文档
 
-## 最佳实践
-
-1. **增量进度** - 一次一个特性
-2. **干净状态** - 始终提交可工作的代码
-3. **文档化** - 每个会话更新进度
-4. **测试** - 完成前验证
-5. **恢复** - 使用 git 回滚不良更改
-
-## 扩展系统
-
-### 添加新特性类别
-
-编辑 `features/feature_schema.json` 在枚举中添加新类别。
-
-### 自定义测试
-
-在 `scripts/` 中添加自定义测试脚本，并在 `.agent/config.yaml` 中引用。
-
-### 多智能体架构
-
-系统可以扩展为使用专门的智能体：
-- **测试智能体**：专注于测试
-- **QA 智能体**：审查代码质量
-- **文档智能体**：维护文档
-
-## 示例会话
-
-```
-[会话开始]
-> pwd
-/home/project
-
-> git log --oneline -5
-abc123 feat: 实现用户认证
-def456 feat: 添加数据库模型
-...
-
-> cat progress/claude-progress.md
-[显示 F003 是下一个特性]
-
-> ./scripts/start_dev.sh
-服务器运行在端口 3000
-
-> ./scripts/test_e2e.sh --smoke
-✓ 所有冒烟测试通过
-
-> "我将工作于 F003: 用户可以创建新项目"
-
-[增量实现特性...]
-
-> npm test
-✓ 所有测试通过
-
-> npm run test:e2e
-✓ E2E 测试通过
-
-[更新 feature_list.json: F003.passes = true]
-
-> git add -A && git commit -m "feat: 实现项目创建 (F003)"
-[abc789]
-
-[更新进度文件...]
-
-> git status
-nothing to commit, clean working directory
-
-[会话结束]
-```
+---
 
 ## 参考资料
 
 - [Anthropic: Effective Harnesses for Long-Running Agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents)
 - [Claude Agent SDK](https://github.com/anthropics/claude-agent-sdk)
 - [Claude 4 Prompting Guide](https://docs.anthropic.com/en/docs/prompting-guide)
+
+---
 
 ## 许可证
 

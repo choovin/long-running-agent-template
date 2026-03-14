@@ -2,6 +2,16 @@
 
 A production-ready template for building AI agents that work effectively across multiple context windows, based on Anthropic's research on effective harnesses for long-running agents.
 
+## One-Line Install
+
+```bash
+mkdir -p ~/.claude/skills && git clone --depth 1 https://github.com/choovin/long-running-agent-template.git /tmp/lra-template && cp -r /tmp/lra-template/skills/long-running-agent ~/.claude/skills/ && rm -rf /tmp/lra-template && echo "✅ Installed!"
+```
+
+After installation, say in Claude Code: `Build an app using long-running agent mode`
+
+---
+
 ## Features
 
 - **Project Template**: Complete project structure with feature management, progress tracking, and testing infrastructure

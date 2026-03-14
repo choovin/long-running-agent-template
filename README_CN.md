@@ -4,52 +4,54 @@
 
 一个生产就绪的项目模板和 Claude Code 技能，用于构建能够跨多个上下文窗口有效工作的 AI 智能体系统。基于 Anthropic 关于长运行智能体有效框架的研究实现。
 
-## 安装为 Claude Code 技能
-
-### 方法一：手动安装
-
-1. **克隆或下载本项目**
-   ```bash
-   git clone <your-repo-url>
-   cd long-running-agent-template
-   ```
-
-2. **复制技能到 Claude Code 配置目录**
-   ```bash
-   # 创建技能目录（如果不存在）
-   mkdir -p ~/.claude/skills
-
-   # 复制技能文件夹
-   cp -r skills/long-running-agent ~/.claude/skills/
-   ```
-
-3. **验证安装**
-   ```bash
-   ls ~/.claude/skills/long-running-agent/
-   # 应该看到: SKILL.md  scripts/  templates/
-   ```
-
-4. **重启 Claude Code 或开始新会话**
-
-### 方法二：使用符号链接（推荐用于开发）
+## 一行命令安装
 
 ```bash
-# 创建技能目录
-mkdir -p ~/.claude/skills
+mkdir -p ~/.claude/skills && git clone --depth 1 https://github.com/choovin/long-running-agent-template.git /tmp/lra-template && cp -r /tmp/lra-template/skills/long-running-agent ~/.claude/skills/ && rm -rf /tmp/lra-template && echo "✅ 安装完成！"
+```
 
-# 创建符号链接
+安装完成后，在 Claude Code 中说：`用长运行智能体模式开发应用`
+
+---
+
+## 其他安装方式
+
+### 方法一：从已克隆的仓库安装
+
+如果你已经克隆了本项目：
+
+```bash
+./skills/long-running-agent/install.sh
+```
+
+### 方法二：手动复制
+
+```bash
+mkdir -p ~/.claude/skills
+cp -r skills/long-running-agent ~/.claude/skills/
+```
+
+### 方法三：符号链接（开发用）
+
+```bash
+mkdir -p ~/.claude/skills
 ln -s $(pwd)/skills/long-running-agent ~/.claude/skills/long-running-agent
 ```
 
-### 验证技能已加载
+---
 
-在 Claude Code 中发送以下消息：
+## 验证安装
+
+```bash
+ls ~/.claude/skills/long-running-agent/
+# 应该看到: SKILL.md  scripts/  templates/  install.sh
+```
+
+在 Claude Code 中测试：
 
 ```
 帮我演示长运行智能体技能
 ```
-
-如果技能正确安装，Claude 会自动加载并使用此技能。
 
 ---
 
